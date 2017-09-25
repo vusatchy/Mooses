@@ -85,7 +85,7 @@ public class MoosesHighlighter {
     private void initMatrixes() {
         for(int x=0;x<img.getWidth();x++){
             for(int y=0;y<img.getHeight();y++) {
-                if(img.getRGB(x,y)==-1){
+                if(img.getRGB(x,y)==-1){ //isWhite
                     binaryMatrixOfMoosesPixels[x][y]=false;
                 }
                 else binaryMatrixOfMoosesPixels[x][y]=true;
