@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MoosesHighlighter {
+public class MooseHighlighter {
 
     class Square implements  Comparable{
         int maxX;
@@ -69,7 +69,7 @@ public class MoosesHighlighter {
     private boolean [][] binaryMatrixOfMoosesPixels;
     private boolean [][] storyMatrix;
 
-    public MoosesHighlighter(String path){
+    public MooseHighlighter(String path){
         try {
             img = ImageIO.read(new File(path));
         } catch (IOException e) {
@@ -96,7 +96,7 @@ public class MoosesHighlighter {
 
     }
 
-    public void searchMooses(){
+    public void searchMoose(){
         for(int x=0;x<img.getWidth();x++) {
             for (int y = 0; y < img.getHeight(); y++) {
                 if (binaryMatrixOfMoosesPixels[x][y]) {
