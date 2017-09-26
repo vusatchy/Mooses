@@ -19,13 +19,15 @@ public class MooseHighlighter {
         int maxY;
         int minY;
         int realArea;
+        int length;
 
-        public Square(int maxX, int minX, int maxY, int minY, int realArea) {
+        public Square(int maxX, int minX, int maxY, int minY, int realArea,int length) {
             this.maxX = maxX;
             this.minX = minX;
             this.maxY = maxY;
             this.minY = minY;
             this.realArea = realArea;
+            this.length=length;
         }
 
         public int calculateSquareArea() {
@@ -40,6 +42,10 @@ public class MooseHighlighter {
             return result;
         }
 
+        public double getCoef(){
+            return (double)length/getCorelation();
+        }
+
 
         @Override
         public String toString() {
@@ -49,12 +55,13 @@ public class MooseHighlighter {
                     ", maxY=" + maxY +
                     ", minY=" + minY +
                     ", realArea=" + realArea + " sq "+ calculateSquareArea()+
-                    " cor "+getCorelation();
+                    " cor "+getCorelation() +
+                    " length"+length+" coef="+getCoef();
         }
-
         @Override
+
         public int compareTo(Object o) {
-            return Double.compare(getCorelation(),((Square)o).getCorelation());
+            return Double.compare((length/getCorelation()),((Square)o).length/((Square)o).getCorelation());
         }
 
         public double getCorelation(){
@@ -73,6 +80,7 @@ public class MooseHighlighter {
     private final int BLACK = -16777216;
     private int maxX;
     private int maxY;
+    private int length;
 
     private List<Square> squares = null;
 
@@ -113,7 +121,7 @@ public class MooseHighlighter {
                         resetCounters();
                         search(x, y);
                         storyMatrix[x][y]=true;
-                        squares.add(new Square(maxX, minX, maxY, minY,area));
+                        squares.add(new Square(maxX, minX, maxY, minY,area,length));
                     } else {
                         boolean allow = true;
                         for (Square sftp : squares) {
@@ -125,7 +133,7 @@ public class MooseHighlighter {
                             resetCounters();
                             search(x, y);
                             storyMatrix[x][y]=true;
-                            squares.add(new Square(maxX, minX, maxY, minY,area));
+                            squares.add(new Square(maxX, minX, maxY, minY,area,length));
                         }
                     }
                 }
@@ -138,10 +146,10 @@ public class MooseHighlighter {
         double maxDiff = 0;
         double filter = 0;
         for (int i = 1; i < squares.size(); i++) {
-            double temp = Math.abs(squares.get(i-1).getCorelation()-squares.get(i).getCorelation());
+            double temp = Math.abs(squares.get(i-1).getCoef()-squares.get(i).getCoef());
             if (maxDiff < temp) {
                 maxDiff = temp;
-                filter = squares.get(i).getCorelation();
+                filter = squares.get(i-1).getCoef();
             }
         }
         return filter;
@@ -150,7 +158,7 @@ public class MooseHighlighter {
 
     public void drawNewPicture() throws IOException {
         squares = squares.stream().filter(x->x.getCorelation()<1).sorted().collect(Collectors.toList());
-        squares = squares.stream().filter(x -> x.getCorelation() < classificationFilter()).collect(Collectors.toList());
+        squares = squares.stream().filter(x -> x.getCoef() > classificationFilter()).collect(Collectors.toList());
         Graphics graphics = img.getGraphics();
         graphics.setColor(new Color(Color.RED.getRGB()));
         for (Square square : squares
@@ -228,6 +236,9 @@ public class MooseHighlighter {
                             minY = point.y;
                         }
                         area++;
+
+                        if(isBoardPixel(point.x,point.y)) length++;
+
                         storyMatrix[point.x][point.y] = true;
                         stack.push(new Point(point.x + 1, point.y));//up
                         stack.push(new Point(point.x - 1, point.y));//down
@@ -241,12 +252,29 @@ public class MooseHighlighter {
 
     //looking for square in which figures could be inscribed
 
+    private boolean isBoardPixel(int x, int y) {
+        boolean result = false;
+        if (isValidPoint(x, y)) {
+            for (int xx = -1; xx < 2; xx++) {
+                for (int yy = -1; yy < 2; yy++) {
+                    if (isValidPoint(x + xx, y + yy)) {
+                        if (!binaryMatrixOfMoosesPixels[x + xx][y + yy]) {//is not black
+                            result = true;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
 
     public void resetCounters(){
         minX=img.getWidth();
         maxX=0;
         area=0;
         maxY=0;
+        length=0;
         minY=img.getHeight();
     }
 }
